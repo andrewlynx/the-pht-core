@@ -130,8 +130,6 @@ class The_Photo_Core_Public {
 		));
 	}
 	
-	//add_action('init', 'the_photo_photosession_post_type'); // Add our The Photo Custom Post Type
-	
 	public function set_admin_bar() {
 		if (!is_super_admin()) {
 			return false;

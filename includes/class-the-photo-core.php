@@ -60,8 +60,7 @@ class The_Photo_Core {
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_public_hooks();
-		
+		$this->define_public_hooks();	
 
 	}
 
@@ -144,6 +143,9 @@ class The_Photo_Core {
 
  		$plugin_admin = new The_Photo_Core_Admin( $this->get_plugin_name(), $this->get_version() );
 		
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_settings_tab' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'the_photo_settings_init');
+		
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		/*Only for dashboard*/	
@@ -209,6 +211,70 @@ class The_Photo_Core {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+	
+	public function get_meta_fields(){
+		$options = get_option('the_photo_options_metadata');
+		$out = array();
+		foreach($options as $number => $value){
+			$out[] = $value;
+		}
+		return $out;
+	}
+	
+	public function the_photo_attachment_fields($file, $post_id){
+		$out = '';
+		@$meta = exif_read_data($file);		
+		$fields = $this->get_meta_fields();
+		
+		if(!array($fields) OR !$meta){
+			return false;
+		}
+		
+		foreach($fields as $field){
+			
+			$fieldname = strtolower(preg_replace('/\s+/', '-', $field));
+			$value = get_post_meta( $post_id, $fieldname, true );
+			if(!$value){				
+				switch($field){
+					case 'Camera':
+						if (isset($meta['Model'])) {
+							$value = $meta['Model'];							
+						}		
+						break;				
+					case 'Exposure Time':	
+						if (isset($meta['ExposureTime'])) {				
+							$values = $meta['ExposureTime'];
+							$divider = explode('/',$values);
+							$value = '1/' . $divider[1]/$divider[0] . ' s';
+						}	
+						break;
+					case 'Aperture':
+						if (isset($meta['FNumber'])) {	
+							$values = $meta['FNumber'];
+							$divider = explode('/',$values);
+							$value = 'F/' . $divider[0]/$divider[1];
+						}	
+						break;
+					case 'ISO':
+						if (isset($meta['ISOSpeedRatings'])) {	
+							$value = $meta['ISOSpeedRatings'];
+						}
+						break;
+					case 'Focal Length':
+						if (isset($meta['FocalLength'])) {	
+							$values = $meta['FocalLength'];
+							$divider = explode('/',$values);
+							$value = $divider[0]/$divider[1] . ' mm';
+						}	
+						break;						
+				}
+			}
+			
+			$out[$field] = $value;
+		}
+		
+		return $out;
 	}
 
 }

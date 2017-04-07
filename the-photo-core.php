@@ -47,3 +47,5 @@ function run_the_photo_core() {
 }
 
 run_the_photo_core();
+
+$the_photo = new The_Photo_Core();

@@ -10,7 +10,7 @@
  * @subpackage The_Photo_Core/includes
  * @author     Andrew Melnik
  */
-class Wp_Spotter_Core_Activator {
+class The_Photo_Core_Activator {
 
 	/**
 	 * @since    1.0.0
